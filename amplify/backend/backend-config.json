@@ -1,0 +1,47 @@
+{
+  "auth": {
+    "spcck1yeb3cf0be": {
+      "customAuth": false,
+      "dependsOn": [],
+      "frontendAuthConfig": {
+        "mfaConfiguration": "OFF",
+        "mfaTypes": [
+          "SMS"
+        ],
+        "passwordProtectionSettings": {
+          "passwordPolicyCharacters": [],
+          "passwordPolicyMinLength": 8
+        },
+        "signupAttributes": [
+          "EMAIL"
+        ],
+        "socialProviders": [],
+        "usernameAttributes": [],
+        "verificationMechanisms": [
+          "EMAIL"
+        ]
+      },
+      "providerPlugin": "awscloudformation",
+      "service": "Cognito"
+    }
+  },
+  "geo": {
+    "sirenasLocationSearch": {
+      "accessType": "AuthorizedAndGuestUsers",
+      "dataProvider": "HERE",
+      "dataSourceIntendedUse": "SingleUse",
+      "dependsOn": [
+        {
+          "attributes": [
+            "UserPoolId"
+          ],
+          "category": "auth",
+          "resourceName": "spcck1yeb3cf0be"
+        }
+      ],
+      "isDefault": true,
+      "providerPlugin": "awscloudformation",
+      "service": "PlaceIndex"
+    }
+  }
+}

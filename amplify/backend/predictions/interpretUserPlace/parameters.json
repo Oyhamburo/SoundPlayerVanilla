@@ -1,0 +1,13 @@
+{
+    "resourceName": "interpretUserPlace",
+    "interpretPolicyName": "interpretPolicy2182df86",
+    "authRoleName": {
+        "Ref": "AuthRoleName"
+    },
+    "unauthRoleName": {
+        "Ref": "UnauthRoleName"
+    },
+    "interpretType": "interpretText",
+    "type": "ENTITIES",
+    "access": "authAndGuest"
+}

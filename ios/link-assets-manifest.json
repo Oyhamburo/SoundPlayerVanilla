@@ -1,0 +1,49 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "assets/fonts/Inter-Black.ttf",
+      "sha1": "f79fa58ace5f55e338c99bf71e7e0702841df6f2"
+    },
+    {
+      "path": "assets/fonts/Inter-Bold.ttf",
+      "sha1": "47ff07c75746682133b81e7ac0537ce50a4c9916"
+    },
+    {
+      "path": "assets/fonts/Inter-ExtraLight.ttf",
+      "sha1": "f78ee1d6cbfc64f656247c604ef270ef116abbf5"
+    },
+    {
+      "path": "assets/fonts/Inter-Light.ttf",
+      "sha1": "cbb2506d8da21edbb2dc8cfa26e3b42a97d138f8"
+    },
+    {
+      "path": "assets/fonts/Inter-Medium.ttf",
+      "sha1": "e76f580811e031813e7150131a0724811cdd737a"
+    },
+    {
+      "path": "assets/fonts/Inter-Regular.ttf",
+      "sha1": "cfa780d0b50b2bb7eacb82984f1b18a95aaa40c5"
+    },
+    {
+      "path": "assets/fonts/Inter-SemiBold.ttf",
+      "sha1": "5e0c44e57e7e090252d79f622899e67585bb892c"
+    },
+    {
+      "path": "assets/fonts/Inter-Thin.ttf",
+      "sha1": "757805e615c974756646e54ceff8e409d5c47207"
+    },
+    {
+      "path": "assets/fonts/PlayfairDisplay-Bold.ttf",
+      "sha1": "fb74d7e889a2c24dc08d5b931c620d47e607d11a"
+    },
+    {
+      "path": "assets/fonts/PlayfairDisplay-Regular.ttf",
+      "sha1": "96a2e660869a872971935d18105d64eadd693ddb"
+    },
+    {
+      "path": "assets/fonts/PlayfairDisplay-SemiBold.ttf",
+      "sha1": "b50e2c15ddb338b15f08df6c2c37ce35f698148f"
+    }
+  ]
+}

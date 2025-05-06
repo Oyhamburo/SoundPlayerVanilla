@@ -1,0 +1,20 @@
+{
+  "name": "SP",
+  "displayName": "SP",
+    "expo": {
+      "plugins": [
+        [
+          "expo-av",
+          {
+            "microphonePermission": "Allow Proyecto Sirenas to access your microphone."
+          }
+        ]
+      ]
+    },  
+    "ios": {
+      "infoPlist": {
+        "UIBackgroundModes": ["audio"]
+      }
+    }
+  
+}

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>77395652563-aeco6h6ckq4g09u5rv80j6ltqud1m4sc.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.77395652563-aeco6h6ckq4g09u5rv80j6ltqud1m4sc</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>77395652563-eo7e8rgc1ki3onooracem32tc77hfqfk.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBuSsm94uwKq88K1lM4RZNr8JYs6neOh8M</string>
+	<key>GCM_SENDER_ID</key>
+	<string>77395652563</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.proyectosirenas.app</string>
+	<key>PROJECT_ID</key>
+	<string>sirenas-app</string>
+	<key>STORAGE_BUCKET</key>
+	<string>sirenas-app.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:77395652563:ios:d675e64a2d0ee454b44926</string>
+</dict>
+</plist>
