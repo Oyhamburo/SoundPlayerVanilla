@@ -1,33 +1,33 @@
 import React from 'react';
-import { Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import Screen3 from './screen3';
+import HomeScreen from './src/screens/HomeScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
+import MiniPlayer from './src/components/MiniPlayer';
 import './trackPlayerService';
+import { StyleSheet, View } from 'react-native';
 const Tab = createBottomTabNavigator();
 
-const Screen1 = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Contenido de la Pestaña 1</Text>
-  </View>
-);
-
-const Screen2 = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Contenido de la Pestaña 2</Text>
-  </View>
-);
 
 
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Tab.Navigator>
-        <Tab.Screen name="Pestaña 1" component={Screen3} />
-        <Tab.Screen name="Pestaña 2" component={Screen2} />
-        <Tab.Screen name="Pestaña 3" component={Screen1} />
-      </Tab.Navigator>
-    </NavigationContainer>
+    <View style={styles.container}>
+      <NavigationContainer>
+        <Tab.Navigator screenOptions={{ headerShown: false }}>
+          <Tab.Screen name="Pestaña 1" component={HomeScreen} />
+          <Tab.Screen name="Pestaña 2" component={SettingsScreen} />
+        </Tab.Navigator>
+      </NavigationContainer>
+      <MiniPlayer />
+    </View>
   );
 }
+
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
