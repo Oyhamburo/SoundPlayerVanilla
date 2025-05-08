@@ -1,87 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-    View,
-    Text,
-    TouchableOpacity,
-    StyleSheet,
-    Modal,
-    Animated,
-    Dimensions,
-    BackHandler,
-    PanResponder,
-    Platform,
-} from 'react-native';
-import TrackPlayer, {
-    State,
-    usePlaybackState,
-    useProgress,
-} from 'react-native-track-player';
-
-const screenHeight = Dimensions.get('window').height;
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import TrackPlayer, { State, usePlaybackState } from 'react-native-track-player';
+import ExpandedPlayerModal from './ExpandedPlayerModal';
 
 const MiniPlayer = () => {
     const [modalVisible, setModalVisible] = useState(false);
+    const playbackState = usePlaybackState();
     const [title, setTitle] = useState('Cargando...');
     const [artist, setArtist] = useState('Desconocido');
-    const playbackState = usePlaybackState();
-    const progress = useProgress();
-    const slideAnim = useRef(new Animated.Value(screenHeight)).current;
-
-    useEffect(() => {
-        const fetchTrack = async () => {
-            const currentTrack = await TrackPlayer.getCurrentTrack();
-            if (currentTrack != null) {
-                const track = await TrackPlayer.getTrack(currentTrack);
-                setTitle(track.title || 'Sin título');
-                setArtist(track.artist || 'Desconocido');
-            }
-        };
-        fetchTrack();
-    }, []);
-
-    const openModal = () => {
-        setModalVisible(true);
-        Animated.timing(slideAnim, {
-            toValue: 0,
-            duration: 300,
-            useNativeDriver: true,
-        }).start();
-    };
-
-    const closeModal = () => {
-        Animated.timing(slideAnim, {
-            toValue: screenHeight,
-            duration: 300,
-            useNativeDriver: true,
-        }).start(() => {
-            setModalVisible(false);
-        });
-    };
-
-
-    // ✅ Gesto de deslizamiento hacia abajo
-    const panResponder = useRef(
-        PanResponder.create({
-            onMoveShouldSetPanResponder: (_, gestureState) => {
-                return gestureState.dy > 10; // si arrastra hacia abajo
-            },
-            onPanResponderMove: (_, gestureState) => {
-                if (gestureState.dy > 0) {
-                    slideAnim.setValue(gestureState.dy);
-                }
-            },
-            onPanResponderRelease: (_, gestureState) => {
-                if (gestureState.dy > 100) {
-                    closeModal();
-                } else {
-                    Animated.spring(slideAnim, {
-                        toValue: 0,
-                        useNativeDriver: true,
-                    }).start();
-                }
-            },
-        })
-    ).current;
 
     const togglePlayPause = async () => {
         const state = await TrackPlayer.getState();
@@ -94,8 +20,8 @@ const MiniPlayer = () => {
 
     return (
         <>
-            <TouchableOpacity onPress={openModal} style={styles.container}>
-                <View style={styles.trackInfo}>
+            <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.container}>
+                <View>
                     <Text style={styles.title}>{title}</Text>
                     <Text style={styles.artist}>{artist}</Text>
                 </View>
@@ -106,38 +32,7 @@ const MiniPlayer = () => {
                 </TouchableOpacity>
             </TouchableOpacity>
 
-            <Modal
-                visible={modalVisible}
-                transparent
-                animationType="none"
-                onRequestClose={closeModal}
-            >
-                <Animated.View
-                    style={[
-                        styles.modalContent,
-                        { transform: [{ translateY: slideAnim }] },
-                    ]}
-                    {...panResponder.panHandlers}
-                >
-                    <View style={styles.expandedContainer}>
-                        <Text style={styles.expandedTitle}>{title}</Text>
-                        <Text style={styles.expandedArtist}>{artist}</Text>
-
-                        <TouchableOpacity
-                            onPress={togglePlayPause}
-                            style={styles.expandedButton}
-                        >
-                            <Text style={styles.expandedButtonText}>
-                                {playbackState === State.Playing ? '⏸ Pausar' : '▶️ Reproducir'}
-                            </Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity onPress={closeModal} style={styles.closeBtn}>
-                            <Text style={styles.closeBtnText}>Cerrar</Text>
-                        </TouchableOpacity>
-                    </View>
-                </Animated.View>
-            </Modal>
+            <ExpandedPlayerModal visible={modalVisible} onClose={() => setModalVisible(false)} />
         </>
     );
 };
@@ -160,10 +55,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         zIndex: 10,
     },
-    trackInfo: {
-        flexDirection: 'column',
-        maxWidth: '80%',
-    },
     title: {
         color: '#fff',
         fontSize: 14,
@@ -176,46 +67,5 @@ const styles = StyleSheet.create({
     playPause: {
         fontSize: 22,
         color: '#fff',
-    },
-    modalContent: {
-        position: 'absolute',
-        height: screenHeight,
-        width: '100%',
-        backgroundColor: '#121212',
-        bottom: 0,
-        zIndex: 20,
-    },
-    expandedContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    expandedTitle: {
-        color: '#fff',
-        fontSize: 20,
-        marginBottom: 8,
-    },
-    expandedArtist: {
-        color: '#ccc',
-        fontSize: 16,
-        marginBottom: 24,
-    },
-    expandedButton: {
-        backgroundColor: '#1DB954',
-        paddingHorizontal: 30,
-        paddingVertical: 12,
-        borderRadius: 24,
-        marginBottom: 20,
-    },
-    expandedButtonText: {
-        color: '#fff',
-        fontSize: 16,
-    },
-    closeBtn: {
-        padding: 10,
-    },
-    closeBtnText: {
-        color: '#bbb',
-        fontSize: 14,
     },
 });

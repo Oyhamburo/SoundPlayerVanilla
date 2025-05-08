@@ -1,33 +1,86 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { View } from 'react-native';
 import HomeScreen from './src/screens/HomeScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import SearchScreen from './src/screens/SearchScreen';
 import MiniPlayer from './src/components/MiniPlayer';
 import './trackPlayerService';
-import { StyleSheet, View } from 'react-native';
+import { ThemeProvider, useTheme } from './src/styles/ThemeContext';
+// import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 const Tab = createBottomTabNavigator();
-
-
-
+import { Alert } from 'react-native';
+// 🔇 Desactiva completamente todas las alertas
+Alert.alert = () => { };
 
 export default function App() {
+  const theme = useTheme();
+
   return (
-    <View style={styles.container}>
-      <NavigationContainer>
-        <Tab.Navigator screenOptions={{ headerShown: false }}>
-          <Tab.Screen name="Pestaña 1" component={HomeScreen} />
-          <Tab.Screen name="Pestaña 2" component={SettingsScreen} />
-        </Tab.Navigator>
-      </NavigationContainer>
-      <MiniPlayer />
-    </View>
+    <ThemeProvider>
+      <View style={{ flex: 1, backgroundColor: theme.background }}>
+        <NavigationContainer>
+
+          <Tab.Navigator
+            screenOptions={{
+              headerShown: false,
+              tabBarShowLabel: false,
+              tabBarStyle: {
+                position: 'absolute',
+                backgroundColor: 'rgba(0,0,0,0.4)',
+                borderTopWidth: 0,
+                elevation: 0,
+                shadowOpacity: 0,
+              },
+              tabBarActiveTintColor: '#FFFFFF',
+              tabBarInactiveTintColor: '#B3B3B3',
+            }}
+          >
+            <Tab.Screen
+              name="Inicio"
+              component={HomeScreen}
+              options={{
+                tabBarIcon: ({ focused, color, size }) => (
+                  <MaterialCommunityIcons
+                    name={focused ? 'home' : 'home-outline'}
+                    size={28}
+                    color={color}
+                  />
+                ),
+              }}
+            />
+            <Tab.Screen
+              name="Buscar"
+              component={SearchScreen}
+              options={{
+                tabBarIcon: ({ focused, color, size }) => (
+                  <MaterialCommunityIcons
+                    name={focused ? 'magnify' : 'magnify'}
+                    size={28}
+                    color={color}
+                  />
+                ),
+              }}
+            />
+            <Tab.Screen
+              name="Biblioteca"
+              component={SettingsScreen}
+              options={{
+                tabBarIcon: ({ focused, color, size }) => (
+                  <MaterialCommunityIcons
+                    name={focused ? 'library' : 'library-shelves'}
+                    size={28}
+                    color={color}
+                  />
+                ),
+              }}
+            />
+          </Tab.Navigator>
+        </NavigationContainer>
+        <MiniPlayer />
+      </View>
+    </ThemeProvider>
   );
 }
-
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
