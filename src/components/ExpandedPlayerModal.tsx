@@ -34,7 +34,6 @@ const ExpandedPlayerModal: React.FC<Props> = ({ visible, onClose }) => {
         isReady,
         isPlaying,
         currentTrack,
-        setup,
         play,
         pause,
         skipToNext,
@@ -46,7 +45,7 @@ const ExpandedPlayerModal: React.FC<Props> = ({ visible, onClose }) => {
 
     useEffect(() => {
         if (visible) {
-            setup();
+            // setup();
             Animated.timing(slideAnim, {
                 toValue: 0,
                 duration: 300,

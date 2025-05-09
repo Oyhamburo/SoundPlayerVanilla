@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View } from 'react-native';
@@ -6,17 +6,24 @@ import HomeScreen from './src/screens/HomeScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import SearchScreen from './src/screens/SearchScreen';
 import MiniPlayer from './src/components/MiniPlayer';
-import './trackPlayerService';
 import { ThemeProvider, useTheme } from './src/styles/ThemeContext';
-// import { MaterialIcons } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-const Tab = createBottomTabNavigator();
 import { Alert } from 'react-native';
-// 🔇 Desactiva completamente todas las alertas
+import { usePlayerStore } from './src/store/usePlayerStore';
+// import './trackPlayerService';
+
+
 Alert.alert = () => { };
+
+const Tab = createBottomTabNavigator();
 
 export default function App() {
   const theme = useTheme();
+  const { setup } = usePlayerStore();
+
+  useEffect(() => {
+    setup()
+  }, [])
 
   return (
     <ThemeProvider>

@@ -1,38 +1,82 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import TrackPlayer, { State, usePlaybackState } from 'react-native-track-player';
+import {
+    View,
+    Text,
+    TouchableOpacity,
+    StyleSheet,
+    Pressable,
+    Image,
+    ActivityIndicator,
+} from 'react-native';
 import ExpandedPlayerModal from './ExpandedPlayerModal';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { usePlayerStore } from '../store/usePlayerStore';
 
 const MiniPlayer = () => {
     const [modalVisible, setModalVisible] = useState(false);
-    const playbackState = usePlaybackState();
-    const [title, setTitle] = useState('Cargando...');
-    const [artist, setArtist] = useState('Desconocido');
+    const [loadingArtwork, setLoadingArtwork] = useState(true);
+    const { play, pause, isPlaying, currentTrack } = usePlayerStore();
 
     const togglePlayPause = async () => {
-        const state = await TrackPlayer.getState();
-        if (state === State.Playing) {
-            await TrackPlayer.pause();
+        if (isPlaying) {
+            await pause();
         } else {
-            await TrackPlayer.play();
+            await play();
         }
     };
 
+    const artworkUri = currentTrack?.artwork ?? '';
+
     return (
         <>
-            <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.container}>
-                <View>
-                    <Text style={styles.title}>{title}</Text>
-                    <Text style={styles.artist}>{artist}</Text>
-                </View>
-                <TouchableOpacity onPress={togglePlayPause}>
-                    <Text style={styles.playPause}>
-                        {playbackState === State.Playing ? '⏸' : '▶️'}
-                    </Text>
-                </TouchableOpacity>
-            </TouchableOpacity>
+            <Pressable onPress={() => setModalVisible(true)} style={styles.container}>
+                {/* Miniatura con loading y fallback */}
+                <View style={styles.artworkWrapper}>
+                    {(loadingArtwork || !artworkUri) && (
+                        <View style={styles.placeholder}>
+                            {loadingArtwork ? (
+                                <ActivityIndicator size="small" color="#aaa" />
+                            ) : (
+                                <Icon name="music-note" size={28} color="#aaa" />
+                            )}
+                        </View>
+                    )}
 
-            <ExpandedPlayerModal visible={modalVisible} onClose={() => setModalVisible(false)} />
+                    {!!artworkUri && (
+                        <Image
+                            source={{ uri: artworkUri }}
+                            style={styles.artwork}
+                            onLoadStart={() => setLoadingArtwork(true)}
+                            onLoadEnd={() => setLoadingArtwork(false)}
+                            onError={() => setLoadingArtwork(false)}
+                        />
+                    )}
+                </View>
+
+                {/* Info */}
+                <View style={styles.info}>
+                    <Text style={styles.title} numberOfLines={1}>
+                        {currentTrack?.title ?? 'Cargando...'}
+                    </Text>
+                    <Text style={styles.artist} numberOfLines={1}>
+                        {currentTrack?.artist ?? 'Desconocido'}
+                    </Text>
+                </View>
+
+                {/* Play/Pause */}
+                <TouchableOpacity onPress={togglePlayPause}>
+                    <Icon
+                        name={isPlaying ? 'pause' : 'play-arrow'}
+                        size={32}
+                        color="#fff"
+                    />
+                </TouchableOpacity>
+            </Pressable>
+
+            <ExpandedPlayerModal
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+            />
         </>
     );
 };
@@ -51,9 +95,35 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         paddingVertical: 10,
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
         zIndex: 10,
+    },
+    artworkWrapper: {
+        width: 44,
+        height: 44,
+        marginRight: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    artwork: {
+        width: 44,
+        height: 44,
+        borderRadius: 6,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+    },
+    placeholder: {
+        width: 44,
+        height: 44,
+        borderRadius: 6,
+        backgroundColor: '#2a2a2a',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    info: {
+        flex: 1,
+        justifyContent: 'center',
     },
     title: {
         color: '#fff',
@@ -63,9 +133,5 @@ const styles = StyleSheet.create({
     artist: {
         color: '#aaa',
         fontSize: 12,
-    },
-    playPause: {
-        fontSize: 22,
-        color: '#fff',
     },
 });

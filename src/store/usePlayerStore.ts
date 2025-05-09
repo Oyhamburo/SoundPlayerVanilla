@@ -1,10 +1,6 @@
 // store/usePlayerStore.ts
 import { create } from "zustand";
-import TrackPlayer, {
-  State,
-  useProgress,
-  Track,
-} from "react-native-track-player";
+import TrackPlayer, { Track, Capability } from "react-native-track-player";
 import { mockPlaylist } from "../utils/mockPlaylist";
 
 type PlayerState = {
@@ -34,7 +30,13 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
   setup: async () => {
     await TrackPlayer.setupPlayer();
+    TrackPlayer.updateOptions({
+      alwaysPauseOnInterruption: false,
+      capabilities: [Capability.Play, Capability.Pause, Capability.Stop],
+      compactCapabilities: [Capability.Play, Capability.Pause, Capability.Stop],
+    });
     await TrackPlayer.add(mockPlaylist);
+
     const track = await TrackPlayer.getTrack(0);
     set({ isReady: true, currentTrack: track });
   },

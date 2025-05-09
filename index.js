@@ -1,8 +1,7 @@
 import { AppRegistry } from "react-native";
+import TrackPlayer from "react-native-track-player";
+import trackPlayerService from "./src/services/trackPlayerService";
 import App from "./App";
 
-function HeadlessCheck({ isHeadless }) {
-  return <App />;
-}
-
-AppRegistry.registerComponent("SP", () => HeadlessCheck);
+TrackPlayer.registerPlaybackService(() => trackPlayerService);
+AppRegistry.registerComponent("SP", () => App);
