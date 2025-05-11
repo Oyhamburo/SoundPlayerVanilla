@@ -5,6 +5,7 @@ export const mockPlaylist = [
     title: "Canción del Amanecer",
     artist: "Los Reactivos",
     artwork: "https://picsum.photos/id/1011/200/200",
+    category: "lofi",
   },
   {
     id: "2",
@@ -12,6 +13,7 @@ export const mockPlaylist = [
     title: "Noches de Código",
     artist: "JS Band",
     artwork: "https://picsum.photos/id/1012/200/200",
+    category: "rock",
   },
   {
     id: "3",
@@ -19,6 +21,7 @@ export const mockPlaylist = [
     title: "Bailando con TypeScript",
     artist: "The Interfaces",
     artwork: "https://picsum.photos/id/1013/200/200",
+    category: "meditation",
   },
   {
     id: "4",
@@ -26,6 +29,7 @@ export const mockPlaylist = [
     title: "Café y Commits",
     artist: "Git Rebase",
     artwork: "https://picsum.photos/id/1014/200/200",
+    category: "latino",
   },
   {
     id: "5",
@@ -33,5 +37,6 @@ export const mockPlaylist = [
     title: "Debug en la Madrugada",
     artist: "Promise All Stars",
     artwork: "https://picsum.photos/id/1015/200/200",
+    category: "jazz",
   },
 ];

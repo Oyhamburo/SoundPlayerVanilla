@@ -11,7 +11,8 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { usePlayerStore } from '../store/usePlayerStore';
-import ExpandedPlayerModal from './ExpandedPlayerModal';
+import ExpandedPlayerModal from './ExpandedPlayerModal/ExpandedPlayerModal';
+import { useProgress } from 'react-native-track-player';
 
 const SWIPE_THRESHOLD = 60;
 
@@ -28,6 +29,18 @@ const MiniPlayer = () => {
         currentTrack,
     } = usePlayerStore();
 
+    const progress = useProgress();
+    const progressWidth = useRef(new Animated.Value(0)).current;
+
+    const percentage =
+        progress.duration > 0 ? (progress.position / progress.duration) * 100 : 0;
+
+    Animated.timing(progressWidth, {
+        toValue: percentage,
+        duration: 300,
+        useNativeDriver: false,
+    }).start();
+
     const translateX = useRef(new Animated.Value(0)).current;
 
     const panResponder = useRef(
@@ -40,12 +53,12 @@ const MiniPlayer = () => {
             onPanResponderRelease: (_, gesture) => {
                 if (gesture.dx > SWIPE_THRESHOLD) {
                     Animated.timing(translateX, {
-                        toValue: 300, // sale hacia la derecha
+                        toValue: 300,
                         duration: 200,
                         useNativeDriver: true,
                     }).start(async () => {
                         await skipToPrevious();
-                        translateX.setValue(-300); // entra desde izquierda
+                        translateX.setValue(-300);
                         Animated.timing(translateX, {
                             toValue: 0,
                             duration: 200,
@@ -54,12 +67,12 @@ const MiniPlayer = () => {
                     });
                 } else if (gesture.dx < -SWIPE_THRESHOLD) {
                     Animated.timing(translateX, {
-                        toValue: -300, // sale hacia la izquierda
+                        toValue: -300,
                         duration: 200,
                         useNativeDriver: true,
                     }).start(async () => {
                         await skipToNext();
-                        translateX.setValue(300); // entra desde derecha
+                        translateX.setValue(300);
                         Animated.timing(translateX, {
                             toValue: 0,
                             duration: 200,
@@ -67,14 +80,12 @@ const MiniPlayer = () => {
                         }).start();
                     });
                 } else {
-                    // si el swipe fue débil, volvemos al centro
                     Animated.spring(translateX, {
                         toValue: 0,
                         useNativeDriver: true,
                     }).start();
                 }
-            }
-
+            },
         })
     ).current;
 
@@ -87,6 +98,7 @@ const MiniPlayer = () => {
     };
 
     const artworkUri = currentTrack?.artwork ?? '';
+
     const opacity = translateX.interpolate({
         inputRange: [-150, 0, 150],
         outputRange: [0, 1, 0],
@@ -149,6 +161,21 @@ const MiniPlayer = () => {
                         color="#fff"
                     />
                 </TouchableOpacity>
+
+                {/* Línea de progreso */}
+                <View style={styles.progressBarBackground}>
+                    <Animated.View
+                        style={[
+                            styles.progressBarFill,
+                            {
+                                width: progressWidth.interpolate({
+                                    inputRange: [0, 100],
+                                    outputRange: ['0%', '100%'],
+                                })
+                            },
+                        ]}
+                    />
+                </View>
             </View>
 
             <ExpandedPlayerModal visible={modalVisible} onClose={() => setModalVisible(false)} />
@@ -157,14 +184,7 @@ const MiniPlayer = () => {
 };
 
 export default MiniPlayer;
-
 const styles = StyleSheet.create({
-    textWrapper: {
-        flex: 1,
-        overflow: 'hidden', // oculta lo que se desliza fuera del área
-        justifyContent: 'center',
-    },
-
     container: {
         position: 'absolute',
         bottom: 55,
@@ -188,18 +208,23 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     artwork: {
-        backgroundColor: '#2a2a2a',
         width: 44,
         height: 44,
         borderRadius: 6,
+        backgroundColor: '#2a2a2a',
     },
     placeholder: {
         width: 44,
         height: 44,
+        borderRadius: 6,
         backgroundColor: '#2a2a2a',
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: 6,
+    },
+    textWrapper: {
+        flex: 1,
+        overflow: 'hidden',
+        justifyContent: 'center',
     },
     textContainer: {
         flex: 1,
@@ -216,5 +241,20 @@ const styles = StyleSheet.create({
     },
     playButton: {
         marginLeft: 12,
+    },
+    progressBarBackground: {
+        position: 'absolute',
+        bottom: 0,
+        left: 6,
+        right: 6,
+        height: 3,
+        backgroundColor: '#2a2a2a',
+        borderBottomLeftRadius: 8,
+        borderBottomRightRadius: 8,
+        overflow: 'hidden',
+    },
+    progressBarFill: {
+        height: 3,
+        backgroundColor: '#1DB954',
     },
 });
