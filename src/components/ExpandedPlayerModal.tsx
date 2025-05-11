@@ -8,6 +8,7 @@ import {
     Dimensions,
     PanResponder,
     TouchableOpacity,
+    BackHandler,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { useTheme } from '../styles/ThemeContext';
@@ -42,10 +43,26 @@ const ExpandedPlayerModal: React.FC<Props> = ({ visible, onClose }) => {
     } = usePlayerStore();
     const progress = useProgress();
     const slideAnim = useRef(new Animated.Value(screenHeight)).current;
+    useEffect(() => {
+        const handleBackPress = () => {
+            if (visible) {
+                onClose();
+                return true; // indica que el evento fue manejado
+            }
+            return false;
+        };
+
+        if (visible) {
+            BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+        }
+
+        return () => {
+            BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
+        };
+    }, [visible, onClose]);
 
     useEffect(() => {
         if (visible) {
-            // setup();
             Animated.timing(slideAnim, {
                 toValue: 0,
                 duration: 300,
@@ -60,7 +77,6 @@ const ExpandedPlayerModal: React.FC<Props> = ({ visible, onClose }) => {
         }
     }, [visible]);
 
-    // Pan gesture: solo activa cierre si el gesto empieza en la zona superior
     const panResponder = useRef(
         PanResponder.create({
             onMoveShouldSetPanResponder: (_, gestureState) => {

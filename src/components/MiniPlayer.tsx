@@ -1,21 +1,82 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
     View,
     Text,
-    TouchableOpacity,
     StyleSheet,
-    Pressable,
+    TouchableOpacity,
     Image,
+    Animated,
+    PanResponder,
     ActivityIndicator,
 } from 'react-native';
-import ExpandedPlayerModal from './ExpandedPlayerModal';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { usePlayerStore } from '../store/usePlayerStore';
+import ExpandedPlayerModal from './ExpandedPlayerModal';
+
+const SWIPE_THRESHOLD = 60;
 
 const MiniPlayer = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [loadingArtwork, setLoadingArtwork] = useState(true);
-    const { play, pause, isPlaying, currentTrack } = usePlayerStore();
+
+    const {
+        play,
+        pause,
+        skipToNext,
+        skipToPrevious,
+        isPlaying,
+        currentTrack,
+    } = usePlayerStore();
+
+    const translateX = useRef(new Animated.Value(0)).current;
+
+    const panResponder = useRef(
+        PanResponder.create({
+            onMoveShouldSetPanResponder: (_, gesture) =>
+                Math.abs(gesture.dx) > 10 && Math.abs(gesture.dy) < 10,
+            onPanResponderMove: (_, gesture) => {
+                translateX.setValue(gesture.dx);
+            },
+            onPanResponderRelease: (_, gesture) => {
+                if (gesture.dx > SWIPE_THRESHOLD) {
+                    Animated.timing(translateX, {
+                        toValue: 300, // sale hacia la derecha
+                        duration: 200,
+                        useNativeDriver: true,
+                    }).start(async () => {
+                        await skipToPrevious();
+                        translateX.setValue(-300); // entra desde izquierda
+                        Animated.timing(translateX, {
+                            toValue: 0,
+                            duration: 200,
+                            useNativeDriver: true,
+                        }).start();
+                    });
+                } else if (gesture.dx < -SWIPE_THRESHOLD) {
+                    Animated.timing(translateX, {
+                        toValue: -300, // sale hacia la izquierda
+                        duration: 200,
+                        useNativeDriver: true,
+                    }).start(async () => {
+                        await skipToNext();
+                        translateX.setValue(300); // entra desde derecha
+                        Animated.timing(translateX, {
+                            toValue: 0,
+                            duration: 200,
+                            useNativeDriver: true,
+                        }).start();
+                    });
+                } else {
+                    // si el swipe fue débil, volvemos al centro
+                    Animated.spring(translateX, {
+                        toValue: 0,
+                        useNativeDriver: true,
+                    }).start();
+                }
+            }
+
+        })
+    ).current;
 
     const togglePlayPause = async () => {
         if (isPlaying) {
@@ -26,22 +87,26 @@ const MiniPlayer = () => {
     };
 
     const artworkUri = currentTrack?.artwork ?? '';
+    const opacity = translateX.interpolate({
+        inputRange: [-150, 0, 150],
+        outputRange: [0, 1, 0],
+        extrapolate: 'clamp',
+    });
 
     return (
         <>
-            <Pressable onPress={() => setModalVisible(true)} style={styles.container}>
-                {/* Miniatura con loading y fallback */}
+            <View style={styles.container}>
+                {/* Miniatura */}
                 <View style={styles.artworkWrapper}>
                     {(loadingArtwork || !artworkUri) && (
                         <View style={styles.placeholder}>
                             {loadingArtwork ? (
                                 <ActivityIndicator size="small" color="#aaa" />
                             ) : (
-                                <Icon name="music-note" size={28} color="#aaa" />
+                                <Icon name="music-note" size={24} color="#aaa" />
                             )}
                         </View>
                     )}
-
                     {!!artworkUri && (
                         <Image
                             source={{ uri: artworkUri }}
@@ -53,30 +118,40 @@ const MiniPlayer = () => {
                     )}
                 </View>
 
-                {/* Info */}
-                <View style={styles.info}>
-                    <Text style={styles.title} numberOfLines={1}>
-                        {currentTrack?.title ?? 'Cargando...'}
-                    </Text>
-                    <Text style={styles.artist} numberOfLines={1}>
-                        {currentTrack?.artist ?? 'Desconocido'}
-                    </Text>
+                {/* Texto deslizable dentro de una máscara */}
+                <View style={styles.textWrapper} {...panResponder.panHandlers}>
+                    <Animated.View
+                        style={[
+                            styles.textContainer,
+                            {
+                                transform: [{ translateX }],
+                                opacity,
+                            },
+                        ]}
+                    >
+
+                        <TouchableOpacity onPress={() => setModalVisible(true)} activeOpacity={0.7}>
+                            <Text style={styles.title} numberOfLines={1}>
+                                {currentTrack?.title ?? 'Cargando...'}
+                            </Text>
+                            <Text style={styles.artist} numberOfLines={1}>
+                                {currentTrack?.artist ?? 'Desconocido'}
+                            </Text>
+                        </TouchableOpacity>
+                    </Animated.View>
                 </View>
 
                 {/* Play/Pause */}
-                <TouchableOpacity onPress={togglePlayPause}>
+                <TouchableOpacity onPress={togglePlayPause} style={styles.playButton}>
                     <Icon
                         name={isPlaying ? 'pause' : 'play-arrow'}
                         size={32}
                         color="#fff"
                     />
                 </TouchableOpacity>
-            </Pressable>
+            </View>
 
-            <ExpandedPlayerModal
-                visible={modalVisible}
-                onClose={() => setModalVisible(false)}
-            />
+            <ExpandedPlayerModal visible={modalVisible} onClose={() => setModalVisible(false)} />
         </>
     );
 };
@@ -84,44 +159,49 @@ const MiniPlayer = () => {
 export default MiniPlayer;
 
 const styles = StyleSheet.create({
+    textWrapper: {
+        flex: 1,
+        overflow: 'hidden', // oculta lo que se desliza fuera del área
+        justifyContent: 'center',
+    },
+
     container: {
         position: 'absolute',
         bottom: 55,
         left: 0,
         right: 0,
-        backgroundColor: '#1c1c1e',
-        borderRadius: 8,
-        marginHorizontal: 6,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
         flexDirection: 'row',
         alignItems: 'center',
+        backgroundColor: '#1c1c1e',
+        padding: 10,
+        marginHorizontal: 6,
+        borderRadius: 8,
         zIndex: 10,
     },
     artworkWrapper: {
         width: 44,
         height: 44,
+        borderRadius: 6,
+        overflow: 'hidden',
         marginRight: 12,
         justifyContent: 'center',
         alignItems: 'center',
     },
     artwork: {
+        backgroundColor: '#2a2a2a',
         width: 44,
         height: 44,
         borderRadius: 6,
-        position: 'absolute',
-        top: 0,
-        left: 0,
     },
     placeholder: {
         width: 44,
         height: 44,
-        borderRadius: 6,
         backgroundColor: '#2a2a2a',
         justifyContent: 'center',
         alignItems: 'center',
+        borderRadius: 6,
     },
-    info: {
+    textContainer: {
         flex: 1,
         justifyContent: 'center',
     },
@@ -133,5 +213,8 @@ const styles = StyleSheet.create({
     artist: {
         color: '#aaa',
         fontSize: 12,
+    },
+    playButton: {
+        marginLeft: 12,
     },
 });
