@@ -5,7 +5,7 @@ import { View } from 'react-native';
 import HomeScreen from './src/screens/HomeScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import SearchScreen from './src/screens/SearchScreen';
-import MiniPlayer from './src/components/MiniPlayer';
+import MiniPlayer from './src/components/MiniPlayer/MiniPlayer';
 import { ThemeProvider, useTheme } from './src/styles/ThemeContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Alert } from 'react-native';

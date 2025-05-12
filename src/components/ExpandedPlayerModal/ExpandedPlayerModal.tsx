@@ -41,12 +41,13 @@ const ExpandedPlayerModal: React.FC<Props> = ({ visible, onClose }) => {
         skipToNext,
         skipToPrevious,
         seekTo,
+        backgroundColor
     } = usePlayerStore();
 
     const progress = useProgress();
     const slideAnim = useRef(new Animated.Value(screenHeight)).current;
     const translateX = useRef(new Animated.Value(0)).current;
-    const [bgColor, setBgColor] = useState(CATEGORY_COLORS[currentTrack?.category] || 'black');
+    const isVerticalSwipe = useRef(false); // bandera para bloquear horizontal si se está deslizando en vertical
 
     useEffect(() => {
         const handleBackPress = () => {
@@ -77,51 +78,79 @@ const ExpandedPlayerModal: React.FC<Props> = ({ visible, onClose }) => {
     const panResponder = useRef(
         PanResponder.create({
             onMoveShouldSetPanResponder: (_, gestureState) =>
-                Math.abs(gestureState.dx) > 10 && Math.abs(gestureState.dy) < 10,
-            onPanResponderMove: (_, gestureState) => {
-                translateX.setValue(gestureState.dx);
-            },
-            onPanResponderRelease: async (_, gestureState) => {
-                const SWIPE_THRESHOLD = 80;
-                if (gestureState.dx < -SWIPE_THRESHOLD) {
-                    Animated.timing(translateX, {
-                        toValue: -300,
-                        duration: 200,
-                        useNativeDriver: true,
-                    }).start(async () => {
-                        await skipToNext();
-                        const index = await TrackPlayer.getCurrentTrack();
-                        const newTrack = index !== null ? await TrackPlayer.getTrack(index) : null;
-                        console.log('New Track:', newTrack?.category);
-                        setBgColor(CATEGORY_COLORS[newTrack?.category] || 'black');
-                        translateX.setValue(300);
-                        Animated.timing(translateX, {
-                            toValue: 0,
-                            duration: 200,
-                            useNativeDriver: true,
-                        }).start();
-                    });
-                } else if (gestureState.dx > SWIPE_THRESHOLD) {
-                    Animated.timing(translateX, {
-                        toValue: 300,
-                        duration: 200,
-                        useNativeDriver: true,
-                    }).start(async () => {
-                        await skipToPrevious();
-                        const index = await TrackPlayer.getCurrentTrack();
-                        const newTrack = index !== null ? await TrackPlayer.getTrack(index) : null;
+                Math.abs(gestureState.dx) > 10 || Math.abs(gestureState.dy) > 10,
 
-                        console.log('New Track:', newTrack?.category);
-                        setBgColor(CATEGORY_COLORS[newTrack?.category] || 'black');
-                        translateX.setValue(-300);
+            onPanResponderMove: (_, gestureState) => {
+                if (!isVerticalSwipe.current) {
+                    isVerticalSwipe.current = Math.abs(gestureState.dy) > Math.abs(gestureState.dx);
+                }
+
+                // Swipe vertical (bloquea horizontal si es vertical)
+                if (isVerticalSwipe.current) {
+                    if (gestureState.dy > 0) {
+                        slideAnim.setValue(gestureState.dy);
+                    }
+                }
+                // Swipe horizontal
+                else {
+                    translateX.setValue(gestureState.dx);
+                }
+            },
+
+            onPanResponderRelease: async (_, gestureState) => {
+                const SWIPE_THRESHOLD_X = 80;
+                const SWIPE_THRESHOLD_Y = 100;
+
+                // Reset flag
+                isVerticalSwipe.current = false;
+
+                // Swipe horizontal
+                if (Math.abs(gestureState.dx) > Math.abs(gestureState.dy)) {
+                    if (gestureState.dx > SWIPE_THRESHOLD_X) {
                         Animated.timing(translateX, {
-                            toValue: 0,
+                            toValue: 300,
                             duration: 200,
                             useNativeDriver: true,
+                        }).start(async () => {
+                            await skipToPrevious();
+                            translateX.setValue(-300);
+                            Animated.timing(translateX, {
+                                toValue: 0,
+                                duration: 200,
+                                useNativeDriver: true,
+                            }).start();
+                        });
+                    } else if (gestureState.dx < -SWIPE_THRESHOLD_X) {
+                        Animated.timing(translateX, {
+                            toValue: -300,
+                            duration: 200,
+                            useNativeDriver: true,
+                        }).start(async () => {
+                            await skipToNext();
+                            translateX.setValue(300);
+                            Animated.timing(translateX, {
+                                toValue: 0,
+                                duration: 200,
+                                useNativeDriver: true,
+                            }).start();
+                        });
+                    } else {
+                        Animated.spring(translateX, {
+                            toValue: 0,
+                            useNativeDriver: true,
                         }).start();
-                    });
+                    }
+                }
+
+                // Swipe vertical
+                else if (gestureState.dy > SWIPE_THRESHOLD_Y) {
+                    Animated.timing(slideAnim, {
+                        toValue: screenHeight,
+                        duration: 200,
+                        useNativeDriver: true,
+                    }).start(() => onClose());
                 } else {
-                    Animated.spring(translateX, {
+                    Animated.spring(slideAnim, {
                         toValue: 0,
                         useNativeDriver: true,
                     }).start();
@@ -134,7 +163,7 @@ const ExpandedPlayerModal: React.FC<Props> = ({ visible, onClose }) => {
 
     return (
         <Animated.View
-            style={[styles.modalContainer, { transform: [{ translateY: slideAnim }], backgroundColor: bgColor }]}
+            style={[styles.modalContainer, { transform: [{ translateY: slideAnim }], backgroundColor }]}
         >
             <SafeAreaView style={styles.safeArea}>
                 <View style={styles.content} {...panResponder.panHandlers}>

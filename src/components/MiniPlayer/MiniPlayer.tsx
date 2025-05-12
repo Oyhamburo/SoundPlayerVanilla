@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import {
     View,
     Text,
-    StyleSheet,
     TouchableOpacity,
     Image,
     Animated,
@@ -10,10 +9,11 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { usePlayerStore } from '../store/usePlayerStore';
-import ExpandedPlayerModal from './ExpandedPlayerModal/ExpandedPlayerModal';
-import { useProgress } from 'react-native-track-player';
-
+import { usePlayerStore } from '../../store/usePlayerStore';
+import ExpandedPlayerModal from '../ExpandedPlayerModal/ExpandedPlayerModal';
+import TrackPlayer, { useProgress } from 'react-native-track-player';
+import { styles } from './styles';
+import { CATEGORY_COLORS } from '../../styles/colors';
 const SWIPE_THRESHOLD = 60;
 
 const MiniPlayer = () => {
@@ -27,6 +27,7 @@ const MiniPlayer = () => {
         skipToPrevious,
         isPlaying,
         currentTrack,
+        backgroundColor
     } = usePlayerStore();
 
     const progress = useProgress();
@@ -58,6 +59,9 @@ const MiniPlayer = () => {
                         useNativeDriver: true,
                     }).start(async () => {
                         await skipToPrevious();
+                        const index = await TrackPlayer.getCurrentTrack();
+                        const newTrack = index !== null ? await TrackPlayer.getTrack(index) : null;
+                        setBgColor(CATEGORY_COLORS[newTrack?.category] || 'black');
                         translateX.setValue(-300);
                         Animated.timing(translateX, {
                             toValue: 0,
@@ -107,7 +111,7 @@ const MiniPlayer = () => {
 
     return (
         <>
-            <View style={styles.container}>
+            <View style={[styles.container, { backgroundColor: backgroundColor }]}>
                 {/* Miniatura */}
                 <View style={styles.artworkWrapper}>
                     {(loadingArtwork || !artworkUri) && (
@@ -184,77 +188,3 @@ const MiniPlayer = () => {
 };
 
 export default MiniPlayer;
-const styles = StyleSheet.create({
-    container: {
-        position: 'absolute',
-        bottom: 55,
-        left: 0,
-        right: 0,
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#1c1c1e',
-        padding: 10,
-        marginHorizontal: 6,
-        borderRadius: 8,
-        zIndex: 10,
-    },
-    artworkWrapper: {
-        width: 44,
-        height: 44,
-        borderRadius: 6,
-        overflow: 'hidden',
-        marginRight: 12,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    artwork: {
-        width: 44,
-        height: 44,
-        borderRadius: 6,
-        backgroundColor: '#2a2a2a',
-    },
-    placeholder: {
-        width: 44,
-        height: 44,
-        borderRadius: 6,
-        backgroundColor: '#2a2a2a',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    textWrapper: {
-        flex: 1,
-        overflow: 'hidden',
-        justifyContent: 'center',
-    },
-    textContainer: {
-        flex: 1,
-        justifyContent: 'center',
-    },
-    title: {
-        color: '#fff',
-        fontSize: 14,
-        fontWeight: 'bold',
-    },
-    artist: {
-        color: '#aaa',
-        fontSize: 12,
-    },
-    playButton: {
-        marginLeft: 12,
-    },
-    progressBarBackground: {
-        position: 'absolute',
-        bottom: 0,
-        left: 6,
-        right: 6,
-        height: 3,
-        backgroundColor: '#2a2a2a',
-        borderBottomLeftRadius: 8,
-        borderBottomRightRadius: 8,
-        overflow: 'hidden',
-    },
-    progressBarFill: {
-        height: 3,
-        backgroundColor: '#1DB954',
-    },
-});

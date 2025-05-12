@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -6,8 +6,11 @@ import {
     ScrollView,
     TouchableOpacity,
     Dimensions,
+    FlatList,
+    Image,
 } from 'react-native';
 import { useTheme } from '../styles/ThemeContext';
+import { getRecordingById, searchArtists, searchRecordings, searchTracks, SoundCloudTrack } from '../api/musicbrainzService';
 
 const { width } = Dimensions.get('window');
 const categories = [
@@ -75,33 +78,37 @@ const categories = [
 
 
 const HomeScreen = () => {
-    const theme = useTheme();
+    const [tracks, setTracks] = useState<SoundCloudTrack[]>([]);
+
+    useEffect(() => {
+        const fetchTracks = async () => {
+            try {
+                const results = await searchTracks('lofi');
+                setTracks(results);
+            } catch (error) {
+                console.error('Error fetching tracks:', error);
+            }
+        };
+        fetchTracks();
+    }, []);
+
+    const renderItem = ({ item }: { item: SoundCloudTrack }) => (
+        <TouchableOpacity>
+            <Image source={{ uri: item.artwork_url || '' }} style={{ width: 100, height: 100 }} />
+            <Text>{item.title}</Text>
+            <Text>{item.user.username}</Text>
+        </TouchableOpacity>
+    );
 
     return (
-        <ScrollView
-            contentContainerStyle={[styles.container, { backgroundColor: theme.background }]}
-        >
-            <Text style={[styles.heading, { color: theme.textPrimary }]}>
-                Descubrí tu ritmo 🎶
-            </Text>
-
-            {categories.map((cat, i) => (
-                <TouchableOpacity
-                    key={cat.id}
-                    style={[
-                        styles.card,
-                        {
-                            backgroundColor: cat.color,
-                            width: width * (i % 2 === 0 ? 0.9 : 0.8), // varía el ancho
-                            alignSelf: i % 2 === 0 ? 'flex-start' : 'flex-end',
-                        },
-                    ]}
-                >
-                    <Text style={styles.cardTitle}>{cat.title}</Text>
-                    <Text style={styles.cardDesc}>{cat.description}</Text>
-                </TouchableOpacity>
-            ))}
-        </ScrollView>
+        <View>
+            <Text>Descubrí tu ritmo 🎶</Text>
+            <FlatList
+                data={tracks}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={renderItem}
+            />
+        </View>
     );
 };
 
